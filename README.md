@@ -1,23 +1,23 @@
-# Pony Watch Scripts
+# Pony Watcher Scripts
 
 These simple scripts can be used to watch for changes to `.pony` files and
 trigger builds and runs of the Pony programs.
 
 # Basic Usage
 
-_Terminal A:_
+__Terminal A:__
 ```bash
 cd path/to/pony/code
 ./path/to/pony-watcher/bin/wpony
 ```
 
-_Terminal B:_
+__Terminal B:__
 ```bash
 cd path/to/pony/code
 ./path/to/pony-watcher/bin/wprog
 ```
 
-_Terminal C:_
+__Terminal C:__
 ```bash
 cd path/to/pony/code
 cat <<-EOF
