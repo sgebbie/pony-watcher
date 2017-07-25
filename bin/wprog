@@ -1,0 +1,49 @@
+#!/bin/bash
+# Copyright 2017 Stewart Gebbie
+# Licensed under the MIT license
+# vim: set ts=4 sw=0:
+#
+# usage: ./path/to/wprog [--enable-line-wrap|-w] [program-name]
+
+# note, we have to watch the directory since the file is replaced.
+
+# echo -e "lines\ncols"|tput -S
+
+DIR=$(basename $(realpath .))
+LINE_WRAP="off"
+
+function hr {
+	dd status=none if=/dev/zero count=1 bs=`tput cols`|tr '\0' -
+	echo
+}
+
+case "$1" in
+	--enable-line-wrap|-w)
+	LINE_WRAP="on"
+	shift
+	;;
+esac
+
+if [ -z "$1" ]; then
+	PROG=${DIR}
+else
+	PROG=$1
+fi
+
+if [ "${LINE_WRAP}" == "off" ]; then
+	echo "turning off linewrap"
+	setterm -linewrap off
+fi
+
+echo ">>>watching:${PROG}<<<"
+
+inotifywait -q -m -e close_write . |\
+	stdbuf -oL grep "^.*\<${PROG}\>$" |\
+	(
+		while read m_dir m_ev m_file; do
+			hr
+			date
+			echo '>>>' $m_file changed '<<<';
+			time ./${PROG};
+		done
+	)

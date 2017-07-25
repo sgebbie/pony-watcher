@@ -1,0 +1,83 @@
+#!/bin/bash
+# Copyright 2017 Stewart Gebbie
+# Licensed under the MIT license
+# vim: set ts=4 sw=0:
+#
+# usage: [--no-optimisei|-d] [extra paths]
+
+DIR=$(dirname $(realpath $0))
+PONYC=ponyc
+
+function hr {
+	dd status=none if=/dev/zero count=1 bs=`tput cols`|tr '\0' -
+	echo
+}
+
+
+case "$1" in
+	--no-optimise|-d)
+	PFLAGS=-d
+	shift
+	;;
+esac
+
+# collect watch paths
+LIST=
+WPATHS=$DIR/wpony.paths
+if [ -r $WPATHS ]; then
+	source $WPATHS
+else
+	LIST+=.
+	LIST+=("$@")
+fi
+
+echo "Watching: ${LIST[@]}"
+
+# EVENTS="modify"
+EVENTS="close_write,delete,moved_from,moved_to"
+
+LAST=0
+TIMEOUT=
+
+TIME=`which time`
+#TIME_FORMAT='%s'
+TIME_FORMAT='--format=time: real %es user %Us sys %Ss mem: avg %KKiB max %MKiB cpu: %P exit: %x'
+
+inotifywait --timefmt '%s' --format '%T %w %e %f' -q -m -e ${EVENTS} "${LIST[@]}" |\
+	stdbuf -oL grep '^.*pony$' |\
+	(
+		# read blocking, then
+		# read with timeout util events consumed and timeout occurs
+		# (note using 'while read...' will exit on timeout, so use 'while true...')
+		declare -A _m_files # create an associative array
+		while true; do
+			read ${TIMEOUT:+-t} ${TIMEOUT} m_time m_dir m_ev m_file
+			# check for a timeout (if not a blocking read)
+			T=$?
+			if [ ${T} == "0" ]; then
+				# keep copies from successful read for after timeout
+				_m_time=${m_time}
+				_m_dir=${m_dir}
+				_m_ev=${m_ev}
+				_m_file=${m_file}
+				_m_files[${_m_file}]+=1
+				TIMEOUT=0.2
+				continue
+			fi
+			# now further limit to one build per second
+			# (probably not needed now that we consume all events above)
+			if [ "${_m_time}" != "${LAST}" ] ; then
+				LAST=${_m_time}
+				hr;
+				date;
+				echo '>>>' ${!_m_files[@]} changed '<<<';
+				# compile...
+				${TIME} "${TIME_FORMAT}" ${PONYC} ${PFLAGS} --linker cc;
+				echo 'done.';
+			fi
+
+			# reset
+			TIMEOUT=
+			unset _m_files; declare -A _m_files
+		done
+	)

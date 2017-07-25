@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# Used to configure which paths to watch for .pony changes.
+# Simply add more lines to the LIST+= section as needed.
+
+DIR=$(dirname $(realpath $0))
+TOP=${DIR}/..
+
+# add current working directory by default
+LIST+=.
+
+# add any other paths that should be watched for changes
+#LIST+=(`realpath ${TOP}/util`)
+
+# add in command line paths
+LIST+=("$@")
