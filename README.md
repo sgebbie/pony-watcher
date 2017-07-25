@@ -28,3 +28,21 @@ EOF
 ```
 
 This will result in the "hello world" Pony program being build and executed.
+
+## Configuration
+
+In order to add paths that are watched for `.pony` files they can either be
+added to the command line:
+
+```bash
+cd path/to/pony/code
+./path/to/pony-watcher/bin/wprog my/extra/path my/other/extra/path
+```
+
+Or, a `wpony.paths` script can be extended with path lines:
+```
+...
+LIST+=/my/extra/path
+LIST+=./my/other/extra/path
+...
+```
