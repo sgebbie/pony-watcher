@@ -3,7 +3,8 @@
 # Used to configure which paths to watch for .pony changes.
 # Simply add more lines to the LIST+= section as needed.
 
-DIR=$(dirname $(realpath $0))
+# note, we don't resolve symlinks so as to support symlinking to wpony
+DIR=$(dirname $(realpath -s $0))
 TOP=${DIR}/..
 
 # add current working directory by default
