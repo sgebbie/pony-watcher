@@ -5,7 +5,7 @@
 #
 # usage: [--no-optimisei|-d] [extra paths]
 
-DIR=$(dirname $(realpath $0))
+DIR=$(dirname $(realpath -s $0))
 PONYC=ponyc
 
 function hr {
