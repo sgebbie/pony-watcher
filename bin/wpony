@@ -21,6 +21,9 @@ case "$1" in
 	;;
 esac
 
+# default to using PIC code
+PFLAGS="${PFLAGS} --pic"
+
 # collect watch paths
 LIST=
 WPATHS=$DIR/wpony.paths
